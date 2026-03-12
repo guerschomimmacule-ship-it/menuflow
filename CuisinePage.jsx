@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { LoginScreen, ProfileModal, ProfileTrigger } from "./shared.js";
 
-import React, { useState, useEffect, useRef } from "react";
-import { LoginScreen, ProfileModal, ProfileTrigger, SAMPLE_ORDERS, mkId, now,
-         useTimer, Clock, TimerBadge, OrderCard, DoneCard, NewOrderModal, RefuseModal } from "./shared.js";
 
 let ORDER_ID = 1000;
 const mkId = () => `#${++ORDER_ID}`;
