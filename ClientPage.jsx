@@ -409,7 +409,6 @@ function TrackingScreen({ orderId, cart, onNewOrder }) {
 
 /* ───────────────── APP ROOT ───────────────── */
 
-export { CuisineApp };
 
 export { ClientApp };
 
