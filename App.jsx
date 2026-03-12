@@ -1906,7 +1906,32 @@ function ClientApp() {
 
 
 export default function App() {
-  const [page, setPage] = React.useState("admin");
+  // Routing par URL: /admin, /cuisine, /client (ou /)
+  const getPage = () => {
+    const path = window.location.pathname.replace("/","").toLowerCase();
+    if (path === "admin")   return "admin";
+    if (path === "cuisine") return "cuisine";
+    return "client"; // default
+  };
+  const [page, setPage] = React.useState(getPage);
+
+  const navigate = (p) => {
+    window.history.pushState({}, "", "/" + p);
+    setPage(p);
+  };
+
+  // Écouter les changements d'URL (bouton retour)
+  React.useEffect(() => {
+    const handler = () => setPage(getPage());
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, []);
+
+  // Interface client : pas de barre de navigation
+  if (page === "client") return <ClientApp/>;
+  if (page === "cuisine") return <CuisineApp/>;
+
+  // Interface Admin : barre de navigation en haut
   const nav = {
     position:"fixed",top:0,left:0,right:0,zIndex:9999,
     background:"#0a0a0a",display:"flex",alignItems:"center",
@@ -1924,14 +1949,12 @@ export default function App() {
         <span style={{color:"white",fontWeight:800,fontSize:"16px",marginRight:"16px"}}>
           Menu<span style={{color:"#e8420a"}}>Flow</span>
         </span>
-        <button style={btn("admin")}   onClick={()=>setPage("admin")}>🛠️ Admin</button>
-        <button style={btn("cuisine")} onClick={()=>setPage("cuisine")}>👨‍🍳 Cuisine</button>
-        <button style={btn("client")}  onClick={()=>setPage("client")}>📱 Client</button>
+        <button style={btn("admin")}   onClick={()=>navigate("admin")}>🛠️ Admin</button>
+        <button style={btn("cuisine")} onClick={()=>navigate("cuisine")}>👨‍🍳 Cuisine</button>
+        <button style={btn("client")}  onClick={()=>navigate("client")}>📱 Client</button>
       </div>
       <div style={{paddingTop:"52px"}}>
-        {page==="admin"   && <AdminApp/>}
-        {page==="cuisine" && <CuisineApp/>}
-        {page==="client"  && <ClientApp/>}
+        <AdminApp/>
       </div>
     </>
   );
