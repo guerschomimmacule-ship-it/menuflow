@@ -387,16 +387,16 @@ function Dashboard({ dishes, cats, tables }) {
       {/* ── Stats cards ── */}
       <div className="stats-grid">
         {[
-          {label:"Plats actifs",       value:active,             sub:`sur ${dishes.length} au total`,       cls:"ca"},
-          {label:"Catégories",         value:cats.length,        sub:"dans la carte",                       cls:"cg"},
-          {label:"Tables",             value:tables.length,      sub:"QR codes générés",                    cls:"cy"},
-          {label:"Chiffre d'affaires", value:fmt(totalCA),       sub:`${filtered.filter(o=>!o.cancelled).length} commandes`,  cls:"ca"},
-          {label:"Commandes annulées", value:cancelled,          sub:`sur ${filtered.length} au total`,     cls:""},
+          {label:"Plats actifs",       value:active,             sub:`sur ${dishes.length} au total`,       cls:"ca",  color:"var(--accent)"},
+          {label:"Catégories",         value:cats.length,        sub:"dans la carte",                       cls:"cg",  color:"var(--green)"},
+          {label:"Tables",             value:tables.length,      sub:"QR codes générés",                    cls:"cy",  color:"var(--yellow)"},
+          {label:"Chiffre d'affaires", value:fmt(totalCA),       sub:`${filtered.filter(o=>!o.cancelled).length} commandes`, cls:"ca", color:"var(--accent)"},
+          {label:"Commandes annulées", value:cancelled,          sub:`sur ${filtered.length} au total`,     cls:"",    color:"var(--red)"},
         ].map((s,i)=>(
-          <div key={i} className={`stat-card ${s.cls}`} style={i===4?{borderTop:"3px solid var(--red)"}:{}}>
-            <div className="stat-label">{s.label}</div>
-            <div className="stat-value" style={i===3?{fontSize:22,paddingTop:6}:i===4?{color:"var(--red)"}:{}}>{s.value}</div>
-            <div className="stat-sub">{s.sub}</div>
+          <div key={i} className={`stat-card ${s.cls}`} style={{borderTop:`3px solid ${s.color}`}}>
+            <div className="stat-label" style={{color:"var(--grey-600)",fontWeight:700}}>{s.label}</div>
+            <div className="stat-value" style={{color:s.color, fontSize:i===3?20:36}}>{s.value}</div>
+            <div className="stat-sub" style={{color:"var(--grey-600)"}}>{s.sub}</div>
           </div>
         ))}
       </div>
@@ -407,29 +407,34 @@ function Dashboard({ dishes, cats, tables }) {
           <h3>Filtres</h3>
           <button className="btn btn-ghost btn-sm" onClick={resetFilters}>↺ Réinitialiser</button>
         </div>
-        <div className="card-body" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12}}>
-          <div className="fg">
-            <label className="fl">Date</label>
-            <input className="fi" type="date" value={fDate} onChange={e=>setFDate(e.target.value)}/>
+        <div style={{padding:"16px 20px",display:"flex",gap:12,alignItems:"flex-end",flexWrap:"wrap"}}>
+          {/* Date */}
+          <div style={{display:"flex",flexDirection:"column",gap:4,flex:"1 1 140px"}}>
+            <label style={{fontSize:11,fontWeight:700,color:"var(--grey-600)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Date</label>
+            <input className="fi" type="date" value={fDate} onChange={e=>setFDate(e.target.value)} style={{background:"var(--grey-50)",color:"var(--black)",border:"1.5px solid var(--grey-200)",borderRadius:8,padding:"8px 12px",fontSize:13}}/>
           </div>
-          <div className="fg">
-            <label className="fl">Catégorie</label>
-            <select className="fi" value={fCat} onChange={e=>setFCat(e.target.value)}>
+          {/* Catégorie */}
+          <div style={{display:"flex",flexDirection:"column",gap:4,flex:"1 1 140px"}}>
+            <label style={{fontSize:11,fontWeight:700,color:"var(--grey-600)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Catégorie</label>
+            <select className="fi" value={fCat} onChange={e=>setFCat(e.target.value)} style={{background:"var(--grey-50)",color:"var(--black)",border:"1.5px solid var(--grey-200)",borderRadius:8,padding:"8px 12px",fontSize:13}}>
               <option value="">Toutes</option>
               {cats.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
-          <div className="fg">
-            <label className="fl">CA min (FCFA)</label>
-            <input className="fi" type="number" placeholder="0" value={fMin} onChange={e=>setFMin(e.target.value)}/>
+          {/* CA min */}
+          <div style={{display:"flex",flexDirection:"column",gap:4,flex:"1 1 120px"}}>
+            <label style={{fontSize:11,fontWeight:700,color:"var(--grey-600)",textTransform:"uppercase",letterSpacing:"0.5px"}}>CA min (FCFA)</label>
+            <input className="fi" type="number" placeholder="0" value={fMin} onChange={e=>setFMin(e.target.value)} style={{background:"var(--grey-50)",color:"var(--black)",border:"1.5px solid var(--grey-200)",borderRadius:8,padding:"8px 12px",fontSize:13}}/>
           </div>
-          <div className="fg">
-            <label className="fl">CA max (FCFA)</label>
-            <input className="fi" type="number" placeholder="999999" value={fMax} onChange={e=>setFMax(e.target.value)}/>
+          {/* CA max */}
+          <div style={{display:"flex",flexDirection:"column",gap:4,flex:"1 1 120px"}}>
+            <label style={{fontSize:11,fontWeight:700,color:"var(--grey-600)",textTransform:"uppercase",letterSpacing:"0.5px"}}>CA max (FCFA)</label>
+            <input className="fi" type="number" placeholder="999 999" value={fMax} onChange={e=>setFMax(e.target.value)} style={{background:"var(--grey-50)",color:"var(--black)",border:"1.5px solid var(--grey-200)",borderRadius:8,padding:"8px 12px",fontSize:13}}/>
           </div>
-          <div className="fg">
-            <label className="fl">Commandes annulées</label>
-            <select className="fi" value={fCancel} onChange={e=>setFCancel(e.target.value)}>
+          {/* Annulées */}
+          <div style={{display:"flex",flexDirection:"column",gap:4,flex:"1 1 160px"}}>
+            <label style={{fontSize:11,fontWeight:700,color:"var(--grey-600)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Annulées</label>
+            <select className="fi" value={fCancel} onChange={e=>setFCancel(e.target.value)} style={{background:"var(--grey-50)",color:"var(--black)",border:"1.5px solid var(--grey-200)",borderRadius:8,padding:"8px 12px",fontSize:13}}>
               <option value="all">Toutes</option>
               <option value="no">Non annulées</option>
               <option value="yes">Annulées uniquement</option>
@@ -887,7 +892,7 @@ function AdminMain({ user, onShowProfile, onUpdateUser, onLogout, showProfile, o
         <ProfileModal user={user} roleKey="admin"
           onUpdate={onUpdateUser} onClose={onCloseProfile} onLogout={onLogout}/>
       )}
-      <div className="app">
+      <div className="app admin-app">
         <aside className="sidebar">
           <div className="s-logo">
             <h1>Menu<span>Flow</span></h1>
@@ -1317,7 +1322,7 @@ function CuisineMain({ user, onShowProfile, onUpdateUser, onLogout, showProfile,
         <ProfileModal user={user} roleKey="cuisine" dark
           onUpdate={onUpdateUser} onClose={onCloseProfile} onLogout={onLogout}/>
       )}
-      <div className="kitchen">
+      <div className="kitchen cuisine-app">
         {/* ── TOPBAR ── */}
         <div className="topbar">
           <div className="topbar-left">
@@ -1856,17 +1861,46 @@ function ClientApp() {
   const [user, setUser] = useState(()=>{
     try { const s=localStorage.getItem("mf_session_client"); return s?JSON.parse(s):null; } catch{ return null; }
   });
-  const [showProfile, setShowProfile] = useState(false);
+  const [screen, setScreen] = useState("welcome"); // welcome | menu | cart | confirm | tracking
+  const [cart,   setCart]   = useState([]);
+  const [orderId,setOrderId]= useState(null);
   const tableNumber = 3;
+
   const handleLogin  = u => { localStorage.setItem("mf_session_client", JSON.stringify(u)); setUser(u); };
   const handleUpdate = u => { localStorage.setItem("mf_session_client", JSON.stringify(u)); setUser(u); };
   const handleLogout = () => { localStorage.removeItem("mf_session_client"); setUser(null); };
 
-  if (!user) return <LoginScreen roleKey="client" onLogin={handleLogin}/>;
-  return <ClientMain tableNumber={tableNumber} user={user}
-    onShowProfile={()=>setShowProfile(true)}
-    onUpdateUser={u=>setUser(u)} onLogout={()=>setUser(null)}
-    showProfile={showProfile} onCloseProfile={()=>setShowProfile(false)}/>;
+  const handleOrder = (finalCart, note) => {
+    const id = "#" + Math.floor(1000 + Math.random()*9000);
+    setOrderId(id);
+    setScreen("confirm");
+  };
+  const handleNewOrder = () => { setCart([]); setScreen("welcome"); };
+
+  if (!user) return <div className="client-app"><LoginScreen roleKey="client" onLogin={handleLogin}/></div>;
+
+  return (
+    <div className="client-app">
+      {screen === "welcome" && (
+        <WelcomeScreen tableNumber={tableNumber} onStart={()=>setScreen("menu")}
+          user={user} onProfile={handleUpdate}/>
+      )}
+      {screen === "menu" && (
+        <MenuScreen tableNumber={tableNumber} cart={cart} onUpdateCart={setCart}
+          onGoCart={()=>setScreen("cart")} user={user} onProfile={handleUpdate}/>
+      )}
+      {screen === "cart" && (
+        <CartScreen tableNumber={tableNumber} cart={cart} onUpdateCart={setCart}
+          onBack={()=>setScreen("menu")} onOrder={handleOrder}/>
+      )}
+      {screen === "confirm" && (
+        <ConfirmScreen orderId={orderId} onTrack={()=>setScreen("tracking")}/>
+      )}
+      {screen === "tracking" && (
+        <TrackingScreen orderId={orderId} cart={cart} onNewOrder={handleNewOrder}/>
+      )}
+    </div>
+  );
 }
 
 
