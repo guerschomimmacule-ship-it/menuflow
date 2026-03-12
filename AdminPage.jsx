@@ -1,13 +1,5 @@
 import React, { useState, useRef } from "react";
-import { LoginScreen, ProfileModal, ProfileTrigger,
-         ImageUpload, QRCode, Modal, Dashboard, MenuManager, TableManager,
-         INIT_CATS, INIT_DISHES, INIT_TABLES, FAKE_ORDERS, fmt,
-         IcGrid, IcMenu, IcQR, IcClock, IcUser } from "./shared.js";
-
-import { LoginScreen, ProfileModal, ProfileTrigger, ImageUpload, QRCode, Modal,
-         INIT_CATS, INIT_DISHES, INIT_TABLES, fmt,
-         IcGrid, IcMenu, IcQR, IcClock, IcUser, IcImg, IcEdit, IcTrash,
-         IcEye, IcEyeOff, IcPrint, IcDl, FAKE_ORDERS } from "./shared.js";
+import { LoginScreen, ProfileModal, ProfileTrigger, ImageUpload, QRCode, Modal, Dashboard, MenuManager, TableManager, INIT_CATS, INIT_DISHES, INIT_TABLES, FAKE_ORDERS, fmt, IcGrid, IcMenu, IcQR, IcClock, IcUser, IcImg, IcEdit, IcTrash, IcEye, IcEyeOff, IcPrint, IcDl } from "./shared.js";
 
 function AdminApp() {
   const [user, setUser] = useState(null);
