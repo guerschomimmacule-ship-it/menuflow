@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { LoginScreen, ProfileModal, ProfileTrigger } from "./shared.js";
 
-
 let ORDER_ID = 1000;
 const mkId = () => `#${++ORDER_ID}`;
 const now = () => Date.now();
