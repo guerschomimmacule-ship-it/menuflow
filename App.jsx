@@ -848,13 +848,19 @@ function TableManager({ tables, setTables, showToast }) {
 
 
 function AdminApp() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(()=>{
+    try { const s=localStorage.getItem("mf_session_admin"); return s?JSON.parse(s):null; } catch{ return null; }
+  });
   const [showProfile, setShowProfile] = useState(false);
 
-  if (!user) return <LoginScreen roleKey="admin" onLogin={setUser}/>;
+  const handleLogin = u => { localStorage.setItem("mf_session_admin", JSON.stringify(u)); setUser(u); };
+  const handleUpdate = u => { localStorage.setItem("mf_session_admin", JSON.stringify(u)); setUser(u); };
+  const handleLogout = () => { localStorage.removeItem("mf_session_admin"); setUser(null); };
+
+  if (!user) return <LoginScreen roleKey="admin" onLogin={handleLogin}/>;
 
   return <AdminMain user={user} onShowProfile={()=>setShowProfile(true)}
-    onUpdateUser={u=>{setUser(u);}} onLogout={()=>setUser(null)}
+    onUpdateUser={handleUpdate} onLogout={handleLogout}
     showProfile={showProfile} onCloseProfile={()=>setShowProfile(false)}/>;
 }
 
@@ -1419,11 +1425,18 @@ const CLIENT_CSS = "";
 
 /* ───────────────── DATA ───────────────── */
 function CuisineApp() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(()=>{
+    try { const s=localStorage.getItem("mf_session_cuisine"); return s?JSON.parse(s):null; } catch{ return null; }
+  });
   const [showProfile, setShowProfile] = useState(false);
-  if (!user) return <LoginScreen roleKey="cuisine" onLogin={setUser}/>;
+
+  const handleLogin  = u => { localStorage.setItem("mf_session_cuisine", JSON.stringify(u)); setUser(u); };
+  const handleUpdate = u => { localStorage.setItem("mf_session_cuisine", JSON.stringify(u)); setUser(u); };
+  const handleLogout = () => { localStorage.removeItem("mf_session_cuisine"); setUser(null); };
+
+  if (!user) return <LoginScreen roleKey="cuisine" onLogin={handleLogin}/>;
   return <CuisineMain user={user} onShowProfile={()=>setShowProfile(true)}
-    onUpdateUser={u=>setUser(u)} onLogout={()=>setUser(null)}
+    onUpdateUser={handleUpdate} onLogout={handleLogout}
     showProfile={showProfile} onCloseProfile={()=>setShowProfile(false)}/>;
 }
 
@@ -1840,10 +1853,16 @@ function TrackingScreen({ orderId, cart, onNewOrder }) {
 
 
 function ClientApp() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(()=>{
+    try { const s=localStorage.getItem("mf_session_client"); return s?JSON.parse(s):null; } catch{ return null; }
+  });
   const [showProfile, setShowProfile] = useState(false);
   const tableNumber = 3;
-  if (!user) return <LoginScreen roleKey="client" onLogin={setUser}/>;
+  const handleLogin  = u => { localStorage.setItem("mf_session_client", JSON.stringify(u)); setUser(u); };
+  const handleUpdate = u => { localStorage.setItem("mf_session_client", JSON.stringify(u)); setUser(u); };
+  const handleLogout = () => { localStorage.removeItem("mf_session_client"); setUser(null); };
+
+  if (!user) return <LoginScreen roleKey="client" onLogin={handleLogin}/>;
   return <ClientMain tableNumber={tableNumber} user={user}
     onShowProfile={()=>setShowProfile(true)}
     onUpdateUser={u=>setUser(u)} onLogout={()=>setUser(null)}
