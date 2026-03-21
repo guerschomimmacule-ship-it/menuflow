@@ -1,6 +1,32 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./style.css";
 
+// ─── CONFIG BACKEND ───────────────────────────────────────────────────────────
+const API = "https://menuflow-backend-z2lr.onrender.com";
+
+// Helper fetch
+const apiFetch = async (path, options = {}) => {
+  const res = await fetch(API + path, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  return res.json();
+};
+
+// Charger Socket.io dynamiquement
+let socket = null;
+const getSocket = () => {
+  if (!socket) {
+    const s = document.createElement("script");
+    s.src = API + "/socket.io/socket.io.js";
+    document.head.appendChild(s);
+    s.onload = () => {
+      socket = window.io(API);
+    };
+  }
+  return socket;
+};
+
 
 // ═══════════════════════════════════════════════════════
 //  AUTH SYSTEM — Login + Profil partagé entre les 3 interfaces
@@ -857,6 +883,21 @@ function AdminApp() {
     try { const s=localStorage.getItem("mf_session_admin"); return s?JSON.parse(s):null; } catch{ return null; }
   });
   const [showProfile, setShowProfile] = useState(false);
+  const [apiData, setApiData] = useState({ cats: null, dishes: null, tables: null });
+
+  // Charger les données depuis le backend
+  useEffect(() => {
+    Promise.all([
+      apiFetch("/api/categories"),
+      apiFetch("/api/dishes"),
+      apiFetch("/api/tables"),
+    ]).then(([cats, dishes, tables]) => {
+      setApiData({ cats, dishes, tables });
+    }).catch(() => {
+      // Fallback sur données locales si backend inaccessible
+      setApiData({ cats: null, dishes: null, tables: null });
+    });
+  }, []);
 
   const handleLogin = u => { localStorage.setItem("mf_session_admin", JSON.stringify(u)); setUser(u); };
   const handleUpdate = u => { localStorage.setItem("mf_session_admin", JSON.stringify(u)); setUser(u); };
@@ -866,14 +907,15 @@ function AdminApp() {
 
   return <AdminMain user={user} onShowProfile={()=>setShowProfile(true)}
     onUpdateUser={handleUpdate} onLogout={handleLogout}
-    showProfile={showProfile} onCloseProfile={()=>setShowProfile(false)}/>;
+    showProfile={showProfile} onCloseProfile={()=>setShowProfile(false)}
+    apiCats={apiData.cats} apiDishes={apiData.dishes} apiTables={apiData.tables}/>;
 }
 
-function AdminMain({ user, onShowProfile, onUpdateUser, onLogout, showProfile, onCloseProfile }) {
+function AdminMain({ user, onShowProfile, onUpdateUser, onLogout, showProfile, onCloseProfile, apiCats, apiDishes, apiTables }) {
   const [page,setPage]       = useState("dashboard");
-  const [cats,setCats]       = useState(INIT_CATS);
-  const [dishes,setDishes]   = useState(INIT_DISHES);
-  const [tables,setTables]   = useState(INIT_TABLES);
+  const [cats,setCats]       = useState(apiCats || INIT_CATS);
+  const [dishes,setDishes]   = useState(apiDishes || INIT_DISHES);
+  const [tables,setTables]   = useState(apiTables || INIT_TABLES);
   const [toast,setToast]     = useState(null);
 
   const showToast = msg => { setToast(msg); setTimeout(()=>setToast(null),2800); };
@@ -1434,15 +1476,40 @@ function CuisineApp() {
     try { const s=localStorage.getItem("mf_session_cuisine"); return s?JSON.parse(s):null; } catch{ return null; }
   });
   const [showProfile, setShowProfile] = useState(false);
+  const [liveOrders, setLiveOrders]   = useState(null);
+
+  useEffect(() => {
+    // Charger les commandes existantes
+    apiFetch("/api/orders").then(setLiveOrders).catch(()=>{});
+
+    // Socket.io pour temps réel
+    const script = document.createElement("script");
+    script.src = API + "/socket.io/socket.io.js";
+    script.onload = () => {
+      const s = window.io(API);
+      s.on("orders:update", setLiveOrders);
+      s.on("order:new", () => apiFetch("/api/orders").then(setLiveOrders));
+    };
+    document.head.appendChild(script);
+  }, []);
 
   const handleLogin  = u => { localStorage.setItem("mf_session_cuisine", JSON.stringify(u)); setUser(u); };
   const handleUpdate = u => { localStorage.setItem("mf_session_cuisine", JSON.stringify(u)); setUser(u); };
   const handleLogout = () => { localStorage.removeItem("mf_session_cuisine"); setUser(null); };
 
-  if (!user) return <LoginScreen roleKey="cuisine" onLogin={handleLogin}/>;
-  return <CuisineMain user={user} onShowProfile={()=>setShowProfile(true)}
-    onUpdateUser={handleUpdate} onLogout={handleLogout}
-    showProfile={showProfile} onCloseProfile={()=>setShowProfile(false)}/>;
+  if (!user) return <div className="cuisine-app"><LoginScreen roleKey="cuisine" onLogin={handleLogin}/></div>;
+  return (
+    <div className="cuisine-app">
+      <CuisineMain user={user} onShowProfile={()=>setShowProfile(true)}
+        onUpdateUser={handleUpdate} onLogout={handleLogout}
+        showProfile={showProfile} onCloseProfile={()=>setShowProfile(false)}
+        liveOrders={liveOrders}
+        onUpdateOrderStatus={(id, status) => {
+          apiFetch(`/api/orders/${id}/status`, { method:"PUT", body: JSON.stringify({status}) })
+            .then(() => apiFetch("/api/orders").then(setLiveOrders));
+        }}/>
+    </div>
+  );
 }
 
 
@@ -1871,9 +1938,22 @@ function ClientApp() {
   const handleLogout = () => { localStorage.removeItem("mf_session_client"); setUser(null); };
 
   const handleOrder = (finalCart, note) => {
-    const id = "#" + Math.floor(1000 + Math.random()*9000);
-    setOrderId(id);
-    setScreen("confirm");
+    apiFetch("/api/orders", {
+      method: "POST",
+      body: JSON.stringify({
+        table: tableNumber,
+        items: finalCart.map(i => ({ id: i.id, name: i.name, qty: i.qty, note: i.note || "" })),
+        note: note || "",
+        total: finalCart.reduce((s, i) => s + i.price * i.qty, 0),
+      })
+    }).then(order => {
+      setOrderId(order.id);
+      setScreen("confirm");
+    }).catch(() => {
+      const id = "#" + Math.floor(1000 + Math.random()*9000);
+      setOrderId(id);
+      setScreen("confirm");
+    });
   };
   const handleNewOrder = () => { setCart([]); setScreen("welcome"); };
 
@@ -1906,12 +1986,17 @@ function ClientApp() {
 
 
 export default function App() {
-  // Routing par URL: /admin, /cuisine, /client (ou /)
+  // Lire la variable d'environnement Vite ou fallback sur URL
   const getPage = () => {
+    const env = import.meta.env.VITE_INTERFACE; // "admin", "cuisine" ou "client"
+    if (env === "admin")   return "admin";
+    if (env === "cuisine") return "cuisine";
+    if (env === "client")  return "client";
+    // Fallback : lire l'URL
     const path = window.location.pathname.replace("/","").toLowerCase();
     if (path === "admin")   return "admin";
     if (path === "cuisine") return "cuisine";
-    return "client"; // default
+    return "client";
   };
   const [page, setPage] = React.useState(getPage);
 
@@ -1920,7 +2005,6 @@ export default function App() {
     setPage(p);
   };
 
-  // Écouter les changements d'URL (bouton retour)
   React.useEffect(() => {
     const handler = () => setPage(getPage());
     window.addEventListener("popstate", handler);
