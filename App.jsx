@@ -387,16 +387,16 @@ function Dashboard({ dishes, cats, tables }) {
       {/* ── Stats cards ── */}
       <div className="stats-grid">
         {[
-          {label:"Plats actifs",       value:active,             sub:`sur ${dishes.length} au total`,       cls:"ca",  color:"var(--accent)"},
-          {label:"Catégories",         value:cats.length,        sub:"dans la carte",                       cls:"cg",  color:"var(--green)"},
-          {label:"Tables",             value:tables.length,      sub:"QR codes générés",                    cls:"cy",  color:"var(--yellow)"},
-          {label:"Chiffre d'affaires", value:fmt(totalCA),       sub:`${filtered.filter(o=>!o.cancelled).length} commandes`, cls:"ca", color:"var(--accent)"},
-          {label:"Commandes annulées", value:cancelled,          sub:`sur ${filtered.length} au total`,     cls:"",    color:"var(--red)"},
+          {label:"Plats actifs",       value:active,             sub:`sur ${dishes.length} au total`,       cls:"ca",  color:"#e8420a"},
+          {label:"Catégories",         value:cats.length,        sub:"dans la carte",                       cls:"cg",  color:"#1a7a4a"},
+          {label:"Tables",             value:tables.length,      sub:"QR codes générés",                    cls:"cy",  color:"#c47a0a"},
+          {label:"Chiffre d'affaires", value:fmt(totalCA),       sub:`${filtered.filter(o=>!o.cancelled).length} commandes`, cls:"ca", color:"#e8420a"},
+          {label:"Commandes annulées", value:cancelled,          sub:`sur ${filtered.length} au total`,     cls:"",    color:"#c0392b"},
         ].map((s,i)=>(
-          <div key={i} className={`stat-card ${s.cls}`} style={{borderTop:`3px solid ${s.color}`}}>
-            <div className="stat-label" style={{color:"var(--grey-600)",fontWeight:700}}>{s.label}</div>
-            <div className="stat-value" style={{color:s.color, fontSize:i===3?20:36}}>{s.value}</div>
-            <div className="stat-sub" style={{color:"var(--grey-600)"}}>{s.sub}</div>
+          <div key={i} className="stat-card" style={{background:"#ffffff",borderTop:`4px solid ${s.color}`,borderRadius:14,padding:"22px 24px",boxShadow:"0 1px 3px rgba(0,0,0,0.08)"}}>
+            <div style={{fontSize:11,fontWeight:700,color:"#5a5a56",textTransform:"uppercase",letterSpacing:"0.6px",marginBottom:10}}>{s.label}</div>
+            <div style={{fontFamily:"Fraunces,serif",fontSize:i===3?22:40,fontWeight:800,lineHeight:1,color:s.color}}>{s.value}</div>
+            <div style={{fontSize:12,color:"#5a5a56",marginTop:6}}>{s.sub}</div>
           </div>
         ))}
       </div>
@@ -1927,12 +1927,7 @@ export default function App() {
     return () => window.removeEventListener("popstate", handler);
   }, []);
 
-  // Interface client : pas de barre de navigation
-  if (page === "client") return <ClientApp/>;
-  if (page === "cuisine") return <CuisineApp/>;
-
-  // Interface Admin : barre de navigation en haut
-  const nav = {
+  const navStyle = {
     position:"fixed",top:0,left:0,right:0,zIndex:9999,
     background:"#0a0a0a",display:"flex",alignItems:"center",
     gap:"8px",padding:"10px 20px",
@@ -1943,16 +1938,35 @@ export default function App() {
     cursor:"pointer",fontWeight:700,fontSize:"13px",
     background:page===id?"#e8420a":"#2a2a2a",color:"white",transition:"all 0.15s",
   });
+
+  const NavBar = () => (
+    <div style={navStyle}>
+      <span style={{color:"white",fontWeight:800,fontSize:"16px",marginRight:"16px"}}>
+        Menu<span style={{color:"#e8420a"}}>Flow</span>
+      </span>
+      <button style={btn("admin")}   onClick={()=>navigate("admin")}>🛠️ Admin</button>
+      <button style={btn("cuisine")} onClick={()=>navigate("cuisine")}>👨‍🍳 Cuisine</button>
+      <button style={btn("client")}  onClick={()=>navigate("client")}>📱 Client</button>
+    </div>
+  );
+
+  if (page === "cuisine") return (
+    <>
+      <NavBar/>
+      <div style={{paddingTop:"52px"}}><CuisineApp/></div>
+    </>
+  );
+
+  if (page === "client") return (
+    <>
+      <NavBar/>
+      <div style={{paddingTop:"52px"}}><ClientApp/></div>
+    </>
+  );
+
   return (
     <>
-      <div style={nav}>
-        <span style={{color:"white",fontWeight:800,fontSize:"16px",marginRight:"16px"}}>
-          Menu<span style={{color:"#e8420a"}}>Flow</span>
-        </span>
-        <button style={btn("admin")}   onClick={()=>navigate("admin")}>🛠️ Admin</button>
-        <button style={btn("cuisine")} onClick={()=>navigate("cuisine")}>👨‍🍳 Cuisine</button>
-        <button style={btn("client")}  onClick={()=>navigate("client")}>📱 Client</button>
-      </div>
+      <NavBar/>
       <div style={{paddingTop:"52px"}}>
         <AdminApp/>
       </div>
